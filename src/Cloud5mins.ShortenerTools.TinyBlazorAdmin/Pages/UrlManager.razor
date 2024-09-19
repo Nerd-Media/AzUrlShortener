@@ -204,10 +204,7 @@ else
     {
         try
         {
-            var fnKey = Environment.GetEnvironmentVariable("FnKey");
-            var requestUri = $"/api/UrlList?code={fnKey}";
-    
-            using var response = await Http.GetAsync(requestUri);
+            using var response = await Http.GetAsync("/api/UrlList");
             if(response.IsSuccessStatusCode){
                 urls = await response.Content.ReadFromJsonAsync<ListResponse>();    
             }
@@ -232,18 +229,16 @@ else
         await RefreshGrid();
         StateHasChanged();
     }
-
     private async Task SaveShortUrl()
     {
         ShowCreatePopup = false;
 
         try
         {
-            var fnKey = Environment.GetEnvironmentVariable("FnKey");
-            var requestUri = $"/api/UrlCreate?code={fnKey}";
-
-            await Http.PostAsJsonAsync(requestUri, shortUrlRequest);
+            await Http.PostAsJsonAsync<ShortUrlRequest>("/api/UrlCreate", shortUrlRequest);
             await UpdateUIList();
+            @* await grdUrls.ClearFilteringAsync();
+                await grdUrls.FilterByColumnAsync("RowKey", "equal", shortUrlRequest.Vanity); *@
         }
         catch (System.Exception ex)
         {
@@ -270,6 +265,7 @@ else
         await JSRuntime.InvokeVoidAsync("clipboardCopy.copyText", url);
     }
 
+
     void EditShortUrl(ShortUrlEntity urlEntity)
     {
         editedUrl = urlEntity;
@@ -279,19 +275,8 @@ else
     private async Task SaveUpdatedShortUrl()
     {
         ShowEditPopup = false;
-
-        try
-        {
-            var fnKey = Environment.GetEnvironmentVariable("FnKey");
-            var requestUri = $"/api/UrlUpdate?code={fnKey}";
-
-            await Http.PostAsJsonAsync(requestUri, editedUrl);
-            await UpdateUIList();
-        }
-        catch (System.Exception ex)
-        {
-            Console.WriteLine(ex.ToString());
-        }
+        await Http.PostAsJsonAsync<ShortUrlEntity>("/api/UrlUpdate", editedUrl);
+        await UpdateUIList();
     }
 
     private void NavigateToStats(string vanity){
@@ -300,17 +285,8 @@ else
 
     public async Task ArchiveShortUrl(ShortUrlEntity urlEntity)
     {
-        try
-        {
-            var fnKey = Environment.GetEnvironmentVariable("FnKey");
-            var requestUri = $"/api/UrlArchive?code={fnKey}";
-
-            await Http.PostAsJsonAsync(requestUri, urlEntity);
-            await UpdateUIList();
-        }
-        catch (System.Exception ex)
-        {
-            Console.WriteLine(ex.ToString());
-        }
+        await Http.PostAsJsonAsync<ShortUrlEntity>("/api/UrlArchive", urlEntity);
+        await UpdateUIList();
     }
+
 }
