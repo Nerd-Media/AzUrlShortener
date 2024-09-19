@@ -204,7 +204,7 @@ else
     {
         try
         {
-            using var response = await Http.GetAsync("/api/UrlList");
+            using var response = await Http.GetAsync("/api/UrlList" + Environment.GetEnvironmentVariable("FnKey"));
             if(response.IsSuccessStatusCode){
                 urls = await response.Content.ReadFromJsonAsync<ListResponse>();    
             }
