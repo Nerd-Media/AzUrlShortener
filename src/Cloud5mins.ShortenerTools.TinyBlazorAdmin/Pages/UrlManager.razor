@@ -9,6 +9,8 @@
 @inject HttpClient Http
 @inject IJSRuntime JSRuntime
 @inject NavigationManager NavigationManager
+@inject IConfiguration Configuration
+
 
 @attribute [Authorize(Roles = "admin")]
 
@@ -204,7 +206,11 @@ else
     {
         try
         {
-            using var response = await Http.GetAsync("/api/UrlList?code=" + Environment.GetEnvironmentVariable("FnKey"));
+            
+            var hostKey = Configuration["FnKey"];
+            var requestUri = $"/api/UrlList?code={hostKey}";
+            
+            using var response = await Http.GetAsync(requestUri );
             if(response.IsSuccessStatusCode){
                 urls = await response.Content.ReadFromJsonAsync<ListResponse>();    
             }
