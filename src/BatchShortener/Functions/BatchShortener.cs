@@ -31,7 +31,6 @@ namespace Cloud5mins.ShortenerTools.BatchShortener.Functions
             {
                 string dbName = Environment.GetEnvironmentVariable("CosmosDbName") ?? throw new InvalidOperationException("CosmosDbName environment variable is not set");
                 string containerName = Environment.GetEnvironmentVariable("CosmosDbContainerName") ?? throw new InvalidOperationException("CosmosDbContainerName environment variable is not set");
-                string apiUrl = Environment.GetEnvironmentVariable("ApiUrl") ?? throw new InvalidOperationException("ApiUrl environment variable is not set");
 
                 var container = _cosmosClient.GetContainer(dbName, containerName);
 
@@ -59,14 +58,14 @@ namespace Cloud5mins.ShortenerTools.BatchShortener.Functions
 
                         try
                         {
-                            var httpClient = _httpClientFactory.CreateClient();
+                            var httpClient = _httpClientFactory.CreateClient("ApiClient");
 
                             var shortRequest = new ShortRequest
                             {
                                 Url = url,
                                 Title = item.Article_Title ?? $"Auto-generated URL for {item.Article_GUID}"
                             };
-                            var apiResponse = await httpClient.PostAsJsonAsync(apiUrl, shortRequest);
+                            var apiResponse = await httpClient.PostAsJsonAsync("/api/UrlCreate", shortRequest);
                             apiResponse.EnsureSuccessStatusCode();
 
                             // Get shortened URL
