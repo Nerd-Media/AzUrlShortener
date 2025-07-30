@@ -12,12 +12,13 @@
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Sdk" Version="2.0.2" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Timer" Version="4.3.0" />
     <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.40.0" />
-    <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.3" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.3" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Core\Cloud5mins.ShortenerTools.Core.csproj" />
+    <ProjectReference Include="..\ServiceDefaults\Cloud5mins.ShortenerTools.ServiceDefaults.csproj" />
   </ItemGroup>
   
   <ItemGroup>

@@ -1,40 +1,43 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Azure.Cosmos;
+using Microsoft.Azure.Functions.Worker.Builder;
 
-var host = new HostBuilder()
-    .ConfigureFunctionsWorkerDefaults()
-    .ConfigureServices(services =>
+var builder = FunctionsApplication.CreateBuilder(args);
+
+builder.AddServiceDefaults();
+
+builder.Services.AddHttpClient("ApiClient", client =>
+{
+    client.BaseAddress = new Uri("https+http://api");
+});
+
+builder.Services.AddSingleton(sp =>
+{
+    string connectionString = Environment.GetEnvironmentVariable("CosmosDbConnectionString") ??
+        throw new InvalidOperationException("CosmosDbConnectionString environment variable is not set");
+
+    var cosmosClientOptions = new CosmosClientOptions
     {
-        services.AddHttpClient();
-
-        // Add CosmosDB client as a singleton
-        services.AddSingleton(sp =>
+        HttpClientFactory = () =>
         {
-            string connectionString = Environment.GetEnvironmentVariable("CosmosDbConnectionString") ??
-                throw new InvalidOperationException("CosmosDbConnectionString environment variable is not set");
-
-            var cosmosClientOptions = new CosmosClientOptions
+            HttpMessageHandler httpMessageHandler = new HttpClientHandler()
             {
-                HttpClientFactory = () =>
-                {
-                    HttpMessageHandler httpMessageHandler = new HttpClientHandler()
-                    {
-                        // Enable for development purposes only
-                        // ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
-                    };
-                    return new HttpClient(httpMessageHandler);
-                },
-                ConnectionMode = ConnectionMode.Gateway,
-                SerializerOptions = new CosmosSerializationOptions
-                {
-                    PropertyNamingPolicy = CosmosPropertyNamingPolicy.CamelCase,
-                }
+                // Enable for development purposes only
+                // ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
             };
+            return new HttpClient(httpMessageHandler);
+        },
+        ConnectionMode = ConnectionMode.Gateway,
+        SerializerOptions = new CosmosSerializationOptions
+        {
+            PropertyNamingPolicy = CosmosPropertyNamingPolicy.CamelCase,
+        }
+    };
 
-            return new CosmosClient(connectionString, cosmosClientOptions);
-        });
-    })
-    .Build();
+    return new CosmosClient(connectionString, cosmosClientOptions);
+});
+
+var host = builder.Build();
 
 host.Run();
